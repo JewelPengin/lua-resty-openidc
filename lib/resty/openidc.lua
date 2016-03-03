@@ -124,6 +124,9 @@ end
 
 -- assemble the redirect_uri
 local function openidc_get_redirect_uri(opts)
+  if opts.full_redirect_uri ~= nil then
+    return opts.full_redirect_uri
+  end
   local scheme = opts.redirect_uri_scheme or ngx.req.get_headers()['X-Forwarded-Proto'] or ngx.var.scheme
   return scheme.."://"..ngx.var.http_host..opts.redirect_uri_path
 end
