@@ -90,7 +90,7 @@ local function openidc_validate_id_token(opts, id_token, nonce)
     ngx.log(ngx.ERR, "nonce \"", id_token.nonce, " in id_token is not equal to the nonce that was sent in the request \"", nonce, "\"")
     return false
   end
- 
+
   -- check issued-at timestamp
   local slack=opts.iat_slack and opts.iat_slack or 120
   if id_token.iat < (os.time() - slack) then
@@ -211,7 +211,8 @@ local function openidc_call_token_endpoint(endpoint, body)
     body = ngx.encode_args(body),
     headers = {
       ["Content-Type"] = "application/x-www-form-urlencoded",
-    }
+    },
+    ssl_verify = false
   })
   if not res then
     err = "accessing token endpoint ("..endpoint..") failed: "..err
@@ -231,7 +232,8 @@ local function openidc_call_userinfo_endpoint(opts, access_token)
   local res, err = httpc:request_uri(opts.discovery.userinfo_endpoint, {
     headers = {
       ["Authorization"] = "Bearer "..access_token,
-    }
+    },
+    ssl_verify = false
   })
   if not res then
     err = "accessing userinfo endpoint ("..opts.discovery.userinfo_endpoint..") failed: "..err
@@ -276,7 +278,7 @@ local function openidc_authorization_response(opts, session)
     ngx.log(ngx.ERR, err)
     return nil, err
   end
-    
+
   -- assemble the parameters to the token endpoint
   local body = {
     grant_type="authorization_code",
@@ -325,10 +327,9 @@ local function openidc_discover(url)
 
     -- make the call to the discovery endpoint
     local httpc = http.new()
-    local res, error = httpc:request_uri(url)
-    --local res, error = httpc:request_uri(url, {
-    --  ssl_verify = false
-    --})
+    local res, error = httpc:request_uri(url, {
+      ssl_verify = false
+    })
     if not res then
       err = "accessing discovery url ("..url..") failed: "..error
       ngx.log(ngx.ERR, err)
