@@ -60,7 +60,7 @@ local function openidc_cache_set(type, key, value, exp)
   local dict = ngx.shared[type]
   if dict then
     local success, err, forcible = dict:set(key, value, exp)
-    ngx.log(ngx.DEBUG, "cache set: success=", success, " err=", err, " forcible=", forcible)
+    ngx.log(ngx.ERR, "cache set: success=", success, " err=", err, " forcible=", forcible)
   end
 end
 
@@ -71,7 +71,7 @@ local function openidc_cache_get(type, key)
   local flags = nil
   if dict then
     value, flags = dict:get(key)
-    if value then ngx.log(ngx.DEBUG, "cache hit: type=", type, " key=", key) end
+    if value then ngx.log(ngx.ERR, "cache hit: type=", type, " key=", key) end
   end
   return value
 end
@@ -206,7 +206,7 @@ end
 -- make a call to the token endpoint
 local function openidc_call_token_endpoint(endpoint, body)
 
-  ngx.log(ngx.DEBUG, "request body for token endpoint call: ", ngx.encode_args(body))
+  ngx.log(ngx.ERR, "request body for token endpoint call: ", ngx.encode_args(body))
 
   local httpc = http.new()
   local res, err = httpc:request_uri(endpoint, {
@@ -223,7 +223,7 @@ local function openidc_call_token_endpoint(endpoint, body)
     return nil, err
   end
 
-  ngx.log(ngx.DEBUG, "token endpoint response: ", res.body)
+  ngx.log(ngx.ERR, "token endpoint response: ", res.body)
 
   return openidc_parse_json_response(res);
 end
@@ -244,7 +244,7 @@ local function openidc_call_userinfo_endpoint(opts, access_token)
     return nil, err
   end
 
-  ngx.log(ngx.DEBUG, "userinfo response: ", res.body)
+  ngx.log(ngx.ERR, "userinfo response: ", res.body)
 
   -- parse the response from the user info endpoint
   return openidc_parse_json_response(res)
@@ -377,7 +377,7 @@ function openidc.authenticate(opts)
   end
 
   -- log id_token contents
-  ngx.log(ngx.DEBUG, "id_token=", cjson.encode(session.data.id_token))
+  ngx.log(ngx.ERR, "id_token=", cjson.encode(session.data.id_token))
 
   -- return the id_token to the caller Lua script for access control purposes
   return
